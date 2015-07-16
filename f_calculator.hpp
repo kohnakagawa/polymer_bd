@@ -14,7 +14,7 @@ public:
       const double  dr2		= dr.x * dr.x + dr.y * dr.y + dr.z * dr.z;
       const double  inv_dr	= 1.0 / std::sqrt(dr2);
       const double  cf_bond	= Parameter::cf_b * (inv_dr - Parameter::inv_b);
-      const double3 Fbond	= {cf_bond * dr.x, cf_bond * dr.y, cf_bond * dr.z};
+      const double3 Fbond(cf_bond * dr.x, cf_bond * dr.y, cf_bond * dr.z);
     
       force[i + 1] += Fbond; 
       force[i    ] -= Fbond;
@@ -39,14 +39,9 @@ public:
 	  const double inv_dr6 = inv_dr2 * inv_dr2 * inv_dr2;
 	
 	  const double dF_norm = Parameter::cf_nbnded * inv_dr6 * 6.0 * (2.0 * inv_dr6 - 1.0) * inv_dr2;
-	  const double3 dF_nb = {dF_norm * drij.x, dF_norm * drij.y, dF_norm * drij.z};
-	  force[i].x += dF_nb.x;
-	  force[i].y += dF_nb.y;
-	  force[i].z += dF_nb.z;
-	
-	  force[jid].x -= dF_nb.x;
-	  force[jid].y -= dF_nb.y;
-	  force[jid].z -= dF_nb.z;
+	  const double3 dF_nb(dF_norm * drij.x, dF_norm * drij.y, dF_norm * drij.z);
+	  force[i] += dF_nb;
+	  force[jid] -= dF_nb;
 	}
       }
     }
