@@ -26,6 +26,7 @@ public:
 
   static constexpr double plist_len  = 1.8;
   static constexpr double plist_len2 = plist_len * plist_len;
+  static constexpr double iplist_len = 1.0 / plist_len;
   static constexpr double margin = plist_len - cutof;
 };
 
