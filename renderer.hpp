@@ -8,27 +8,26 @@
 #include "parameter.hpp"
 
 /*
-  Wrapper class for rendering
+  Wrapper class for rendering using glfw3
  */
-class PolymerRenderer{
+class PolymerRenderer {
   GLFWwindow* ptr_window = nullptr;
 
   GLUquadric* sphere = nullptr;
   const GLfloat color[3] = {0.000, 0.500, 0.000};
-  const GLfloat rad = 0.5;
+  const GLfloat rad = 0.05;
   const int div_phi = 10, div_the = 10;
   
-  
-  static void error_callback(int error, const char* description){
+  static void error_callback(int error, const char* description) {
     fputs(description, stderr);
   }
   
-  static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+  static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
       glfwSetWindowShouldClose(window, GL_TRUE);
   }
 
-  inline void RenderSphere(const float3& pos){
+  inline void RenderSphere(const float3& pos) {
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
     glPushMatrix();
     glTranslated(pos.x, pos.y, pos.z);
@@ -37,10 +36,10 @@ class PolymerRenderer{
   }
   
 public:
-  PolymerRenderer(){
+  PolymerRenderer() {
     glfwSetErrorCallback(error_callback);
     
-    if(!glfwInit()){
+    if (!glfwInit()) {
       std::cerr << "glfwInit is failed \n";
       std::exit(EXIT_FAILURE);
     }
@@ -49,17 +48,16 @@ public:
     gluQuadricNormals(sphere, GL_SMOOTH);
   }
 
-  ~PolymerRenderer(){
+  ~PolymerRenderer() {
     //clean up
     glfwDestroyWindow(ptr_window);
     glfwTerminate();
   }
   
   void OpenWindow(const int hei, const int wid,
-		  const std::string& title)
-  {
+		  const std::string& title) {
     ptr_window = glfwCreateWindow(hei, wid, title.c_str(), nullptr, nullptr);
-    if(!ptr_window){
+    if (!ptr_window) {
       glfwTerminate();
       std::cerr << "Cannot create window \n";
       std::exit(EXIT_FAILURE);
@@ -68,28 +66,28 @@ public:
     glfwMakeContextCurrent(ptr_window);
   }
 
-  void SetSwapInterval(const int i){
+  void SetSwapInterval(const int i) {
     glfwSwapInterval(i);
   }
 
-  void SetKeyCallbackFunc(){
+  void SetKeyCallbackFunc() {
     glfwSetKeyCallback(ptr_window, key_callback);
   }
   
-  void RenderPolymer(const double3* pos){
-    for(int i = 0; i < Parameter::MOL_NUM; i++){
+  void RenderPolymer(const double3* pos) {
+    for (int i = 0; i < Parameter::MOL_NUM; i++) {
       const float3 pos_flt(pos[i].x, pos[i].y, pos[i].z);
       RenderSphere(pos_flt);
     }
   }
   
-  bool WindowShouldBeClosed(){ return glfwWindowShouldClose(ptr_window); }
+  bool WindowShouldBeClosed() { return glfwWindowShouldClose(ptr_window); }
   
-  inline void GetFlameSize(int& wid, int& hei){ glfwGetFramebufferSize(ptr_window, &wid, &hei); }
+  inline void GetFlameSize(int& wid, int& hei) { glfwGetFramebufferSize(ptr_window, &wid, &hei); }
   
-  inline void SwapBuffer(){ glfwSwapBuffers(ptr_window); }
+  inline void SwapBuffer() { glfwSwapBuffers(ptr_window); }
   
-  inline void PollEvents(){ glfwPollEvents(); }
+  inline void PollEvents() { glfwPollEvents(); }
 
   void Resize() {
     int wid = -1, hei = -1;

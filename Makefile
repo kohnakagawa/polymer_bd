@@ -13,8 +13,8 @@ endif
 
 DEBUG_FLAG = -O0 -g
 
-#CXXFLAGS += $(RELEASE_FLAG)
-CXXFLAGS += $(DEBUG_FLAG)
+CXXFLAGS += $(RELEASE_FLAG)
+# CXXFLAGS += $(DEBUG_FLAG)
 
 OBJECTS = main.o
 TARGET  = polymer_bd.out

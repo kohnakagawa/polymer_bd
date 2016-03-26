@@ -4,7 +4,7 @@
 #include <vector>
 #include <cmath>
 
-class Parameter{ 
+class Parameter {
 public:
   enum{MOL_NUM = 100,};  
 

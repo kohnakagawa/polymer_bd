@@ -11,13 +11,13 @@ class PRNG{
 public:
   PRNG(const size_t seed, const size_t th_numb) : n_rng(th_numb) {
     gen = new boost::mt19937 [th_numb];
-    for(size_t i = 0; i < th_numb; i++) gen[i].seed(seed + i * 10);
+    for (size_t i = 0; i < th_numb; i++) gen[i].seed(seed + i * 10);
     normal_dist = new boost::normal_distribution<> (0.0, 1.0);
   }
   PRNG(const size_t th_numb) : n_rng(th_numb) {
     gen = new boost::mt19937 [th_numb];
     const size_t base_seed = (size_t) time(NULL);
-    for(size_t i = 0; i < th_numb; i++) gen[i].seed(base_seed + i * 10);
+    for (size_t i = 0; i < th_numb; i++) gen[i].seed(base_seed + i * 10);
     normal_dist = new boost::normal_distribution<> (0.0, 1.0);
   }
   
