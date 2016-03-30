@@ -1,10 +1,14 @@
-#include "renderer.hpp"
 #include "f_calculator.hpp"
 #include "mknearlist.hpp"
 #include <iostream>
 #include <cstdlib>
 #include <limits>
 #include <numeric>
+
+#include "user_defs.h"
+#ifdef REALTIME_DRAW
+#include "renderer.hpp"
+#endif
 
 namespace {
 
@@ -123,7 +127,7 @@ namespace {
     fprintf(fp, "%d %g \n", time, sd_rad);
   }
 
-  void calculate_tempera (const double3* vel, FILE* fp) {
+  void calculate_tempera(const double3* vel, FILE* fp) {
     double sum_vel = 0.0;
     for (int i = 0; i < Parameter::MOL_NUM; i++) {
       sum_vel += vel[i] * vel[i];
@@ -131,6 +135,14 @@ namespace {
       
     sum_vel /= 3.0 * Parameter::MOL_NUM;
     fprintf(fp, "%g \n", sum_vel);
+  }
+
+  void print_config(const double3* pos, const int time, FILE* fp) {
+    fprintf(fp, "%d\n", Parameter::MOL_NUM);
+    fprintf(fp, "time %d\n", time);
+    for (int i = 0; i < Parameter::MOL_NUM; i++) {
+      fprintf(fp, "O %.10g %.10g %.10g\n", pos[i].x, pos[i].y, pos[i].z);
+    }
   }
 
   //particle buffer
@@ -142,17 +154,24 @@ namespace {
 
 int main(int argc, char* argv[]) {
   PRNG prng(1);
-  FILE *fp_rg = fopen("./rg.txt", "w"), *fp_sdrad = fopen("./sdrad.txt", "w"), *fp_temp = fopen("./tempera.txt", "w");
+  FILE *fp_rg = fopen("./rg.txt", "w"), *fp_sdrad = fopen("./sdrad.txt", "w"), *fp_temp = fopen("./tempera.txt", "w"), *fp_config = fopen("./ptcl_config.xyz", "w");
   initialize(pos, vel, force, pair_list);
   create_init_config(pos, vel, prng);
   Mknearlist::create_nearlist(pos, pair_list);
 
+#ifdef REALTIME_DRAW
   PolymerRenderer renderer;
   renderer.OpenWindow(300, 400, "polymer_bd");
+#endif
 
   int time = 0;
-  const int time_step = 1000;
+  const int time_step = 100;
+#ifdef REALTIME_DRAW
   while (!renderer.WindowShouldBeClosed()) {
+#else
+  const int all_time = 5000000;
+  while (time < all_time) {
+#endif
     //first update
     update_pos_vel(pos, vel, force);
 
@@ -176,16 +195,19 @@ int main(int argc, char* argv[]) {
       calculate_rg(pos, time, fp_rg);
       calculate_dev_rad(pos, time, fp_sdrad);
       calculate_tempera(vel, fp_temp);
+      print_config(pos, time, fp_config);
     }
 
     time++;
 
     std::cout << time << std::endl;
 
+#ifdef REALTIME_DRAW
     //render polymer
     renderer.Resize();
     renderer.RenderPolymer(pos);
     renderer.SwapBuffer();
     renderer.PollEvents();
+#endif
   }
 }
