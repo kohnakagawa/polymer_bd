@@ -4,11 +4,11 @@ CXX = g++
 CXXFLAGS = -std=c++11
 
 ifeq ($(CXX), icpc)
-RELEASE_FLAG = -std=c++11 -O3 -xHOST -no-prec-div -Wall
+RELEASE_FLAG = -O3 -xHOST -no-prec-div -Wall
 endif
 
 ifeq ($(CXX), g++)
-RELEASE_FLAG = -std=c++11 -O3 -Wall
+RELEASE_FLAG = -O3 -Wall -ffast-math -funroll-loops
 endif
 
 DEBUG_FLAG = -O0 -g
@@ -16,7 +16,7 @@ DEBUG_FLAG = -O0 -g
 CXXFLAGS += $(RELEASE_FLAG)
 # CXXFLAGS += $(DEBUG_FLAG)
 
-OBJECTS = main.o
+OBJECTS = main.o observer.o
 TARGET  = polymer_bd.out
 LOADLIBES = -lglfw -lGLU -L/usr/lib/nvidia-331-updates -lGL
 

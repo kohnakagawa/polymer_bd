@@ -1,5 +1,6 @@
 #include "f_calculator.hpp"
 #include "mknearlist.hpp"
+#include "observer.hpp"
 #include <iostream>
 #include <cstdlib>
 #include <limits>
@@ -11,7 +12,6 @@
 #endif
 
 namespace {
-
   void initialize(double3* pos,
 		  double3* vel,
 		  double3* force,
@@ -91,70 +91,18 @@ namespace {
     }
   }
 
-  void calculate_rg(const double3* pos,
-		    const int time,
-		    FILE* fp) {
-    const double3 e2e = {pos[0].x - pos[Parameter::MOL_NUM - 1].x,
-			 pos[0].y - pos[Parameter::MOL_NUM - 1].y,
-			 pos[0].z - pos[Parameter::MOL_NUM - 1].z};
-    const double Rg2 = e2e.x * e2e.x + e2e.y * e2e.y + e2e.z * e2e.z;
-    const double Rg  = std::sqrt(Rg2);
-    fprintf(fp, "%d %g \n", time, Rg);
-  }
-
-  void calculate_dev_rad(const double3* pos,
-			 const int time,
-			 FILE* fp) {
-    double3 cm_pos = {0.0, 0.0, 0.0};
-    double inv_molnum = 1.0 / static_cast<double>(Parameter::MOL_NUM);
-    for (int i = 0; i < Parameter::MOL_NUM; i++) {
-      cm_pos.x += pos[i].x;
-      cm_pos.y += pos[i].y;
-      cm_pos.z += pos[i].z;
-    }
-    cm_pos.x *= inv_molnum;
-    cm_pos.y *= inv_molnum;
-    cm_pos.z *= inv_molnum;
-  
-    double sd_rad = 0.0;
-    for (int i = 0; i < Parameter::MOL_NUM; i++) {
-      const double3 cm2pos = {pos[i].x - cm_pos.x,
-			      pos[i].y - cm_pos.y,
-			      pos[i].z - cm_pos.z};
-      sd_rad += cm2pos.x * cm2pos.x + cm2pos.y * cm2pos.y + cm2pos.z * cm2pos.z;
-    }
-    sd_rad *= inv_molnum;
-    fprintf(fp, "%d %g \n", time, sd_rad);
-  }
-
-  void calculate_tempera(const double3* vel, FILE* fp) {
-    double sum_vel = 0.0;
-    for (int i = 0; i < Parameter::MOL_NUM; i++) {
-      sum_vel += vel[i] * vel[i];
-    }
-      
-    sum_vel /= 3.0 * Parameter::MOL_NUM;
-    fprintf(fp, "%g \n", sum_vel);
-  }
-
-  void print_config(const double3* pos, const int time, FILE* fp) {
-    fprintf(fp, "%d\n", Parameter::MOL_NUM);
-    fprintf(fp, "time %d\n", time);
-    for (int i = 0; i < Parameter::MOL_NUM; i++) {
-      fprintf(fp, "O %.10g %.10g %.10g\n", pos[i].x, pos[i].y, pos[i].z);
-    }
-  }
-
-  //particle buffer
+  // particle buffer
   double3 pos[Parameter::MOL_NUM], vel[Parameter::MOL_NUM], force[Parameter::MOL_NUM];
 
-  //pairlist buffer
+  // pairlist buffer
   Plist pair_list;
+
 }
 
 int main(int argc, char* argv[]) {
+  Observer observ;
   PRNG prng(1);
-  FILE *fp_rg = fopen("./rg.txt", "w"), *fp_sdrad = fopen("./sdrad.txt", "w"), *fp_temp = fopen("./tempera.txt", "w"), *fp_config = fopen("./ptcl_config.xyz", "w");
+  
   initialize(pos, vel, force, pair_list);
   create_init_config(pos, vel, prng);
   Mknearlist::create_nearlist(pos, pair_list);
@@ -169,7 +117,7 @@ int main(int argc, char* argv[]) {
 #ifdef REALTIME_DRAW
   while (!renderer.WindowShouldBeClosed()) {
 #else
-  const int all_time = 5000000;
+  const int all_time = 100;
   while (time < all_time) {
 #endif
     //first update
@@ -192,10 +140,10 @@ int main(int argc, char* argv[]) {
 
     //observe
     if (time % time_step == 0) {
-      calculate_rg(pos, time, fp_rg);
-      calculate_dev_rad(pos, time, fp_sdrad);
-      calculate_tempera(vel, fp_temp);
-      print_config(pos, time, fp_config);
+      observ.calculate_rg(pos, time);
+      observ.calculate_dev_rad(pos, time);
+      observ.calculate_tempera(vel);
+      observ.print_config(pos, time);
     }
 
     time++;

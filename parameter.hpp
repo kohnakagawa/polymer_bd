@@ -2,11 +2,12 @@
 
 #include <array>
 #include <vector>
-#include <cmath>
+#include <string>
+#include "mvector3.hpp"
 
 class Parameter {
 public:
-  enum{MOL_NUM = 100,};  
+  static constexpr int MOL_NUM = 100;
 
   static constexpr double bond = 1.0, inv_b  = 1.0 / bond;
   static constexpr double rc   = 1.0, inv_rc = 1.0 / rc;
