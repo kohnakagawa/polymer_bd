@@ -1,2 +1,2 @@
 # polymer_bd
-Standard simulation code for Brownian Dynamics simulation.
+Standard simulation code of Brownian Dynamics.
